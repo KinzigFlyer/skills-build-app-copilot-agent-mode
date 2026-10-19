@@ -28,15 +28,14 @@ OctoFit Tracker is a three-tier application for a school fitness program. The st
 
 ## Implementation decisions
 
-Record your plan here before editing code.
-
-- Presentation tier decision:
-- Logic tier decision:
-- Data tier decision:
-- Activity tracking approach:
-- Team management approach:
-- Leaderboard approach:
-- Workout suggestions approach:
+- Presentation tier decision: Keep the React app as a thin UI layer that has no business logic of its own. Each view should use the shared API client to fetch data, render loading, empty, success, and error states, and provide accessible output with semantic headings, status text, and alert messaging.
+- Logic tier decision: Treat the Express service layer as the canonical place for API validation and aggregation. Routes should translate HTTP requests into service calls while services own the validation rules, ID checks, sorting, and user/team matching logic so the API returns meaningful 4xx errors instead of raw cast exceptions.
+- Data tier decision: Treat the Mongoose schema as the contract of the data layer. Required fields, defaults, and relationships should be defined in the models, with seed scripts using upserts to preserve stable demo records and move a previously assigned demo user to the correct team without deleting unrelated data.
+- Activity tracking approach: Accept `userId`, `teamId`, `type`, and `minutes`, validate that the referenced `User` and `Team` documents exist, reject malformed IDs or missing references with a deliberate 4xx, and persist the record with computed `points` and `occurredAt` values derived from the input and activity type.
+- Team management approach: Require a non-empty `name`, allow `mascot` and `members`, normalize team membership to ObjectId arrays, and keep the membership relationship consistent by linking each member back to the team record without creating duplicate collection entries.
+- Leaderboard approach: Compute totals from the `Activity` collection grouped by `team`, aggregate the sum of each team's points, sort descending, and assign a 1-based rank. The leaderboard should represent authoritative data derived from activity rather than storing redundant totals on the team document.
+- Workout suggestions approach: Resolve the target user by email from the seeded `User` collection, compare the user’s goal or recent activity pattern with the available workout catalog, and return the most relevant recommendation first with a human-readable `reason` explaining the match. If no user exists for the given email, return a deliberate 4xx such as 404.
+- Delivery order: Complete the data contracts first, then the backend service behaviors, then the UI rendering. This keeps the implementation test-driven and reduces rework by ensuring each layer depends only on the contracts established beneath it.
 
 ## Test plan
 
