@@ -6,6 +6,8 @@ on:
     branches:
       - "build-octofit-app"
     paths:
+      - ".github/scripts/grade-step.mjs"
+      - ".github/workflows/4-step.yml"
       - "octofit-tracker/frontend/src/**"
       - "octofit-tracker/frontend/tests/**"
 
